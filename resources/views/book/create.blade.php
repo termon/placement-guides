@@ -18,11 +18,6 @@
                     <x-form.input name="title" value="{{old('title',$book->title)}}"/>
                 </x-form.group>
 
-                <x-form.group label="Slug" name="slug" class="mb-4 flex-1">
-                    <x-form.input name="slug" value="{{old('slug',$book->slug)}}"/>
-                </x-form.group>
-
-
                 <div class="my-2">
                 <x-base.button class="" btype="submit">Create</x-button>
                 <x-base.link href="{{route('book.index')}}">Cancel</x-link>

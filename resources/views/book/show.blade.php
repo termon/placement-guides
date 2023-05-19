@@ -2,11 +2,19 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex space-x-2 items-end">
-            <x-svg.engineer class="text-black dark:text-white dark:bg-gray-900" width="60" />
-            <h1 class="text-slate-900 font-bold ml-4 text-2xl md:text-3xl lg:text-4xl dark:text-white dark:bg-gray-900">
-                {{$book->title}}
-            </h1>
+        <div class="flex space-x-2 justify-between">
+            <div class="flex gap-2 items-center">
+                <x-svg.engineer class="text-black dark:text-white dark:bg-gray-900" width="60" />
+                <h1 class="text-slate-900 font-bold ml-4 text-2xl md:text-3xl lg:text-4xl dark:text-white dark:bg-gray-900">
+                    {{$book->title}}
+                </h1>
+            </div>  
+            @can('admin')
+                <a href="{{route('book.createpage', $book->slug)}}" class="flex content-center">     
+                    <x-svg.plus class="text-green-900"/>        
+                    <span class="font-bold">Add Page</span>
+                </a> 
+            @endcan
         </div>
     </x-slot>
 
@@ -19,7 +27,7 @@
                     @foreach($book->pages as $p)
                         <li class="px-1 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded flex space-x-1">
                             <x-svg.book-icons icon="{{$p->slug}}"  />
-                            <a href="{{route('book.show',['id' => $p->book_id, 'page_id'=>$p->id])}}" class="font-semibold" >
+                            <a href="{{route('book.show',['id' => $p->book->slug, 'page_id'=>$p->slug])}}" class="font-semibold" >
                                 {{-- <span>{{$p->sequence}}.</span>  --}}
                                 <span>{{$p->title}}</span>
                             </a>
@@ -29,24 +37,22 @@
         </aside>
 
         <!-- page content -->
-        <article class="mt-2 mx-auto prose dark:prose-invert dark:bg-gray-900 dark:prose-h2:text-blue-200 dark:prose-h3:text-slate-400 prose-h2:text-blue-900">
-            <h1 class="text-blue-900 dark:text-white me-3">
-                {{$page->title}}                                  
-            </h1>
-            <div class="flex items-center">
-                
+        <article class="mt-2 mx-auto prose dark:prose-invert dark:bg-gray-900 dark:prose-h2:text-blue-200 dark:prose-h3:text-slate-400 prose-h2:text-blue-900">           
+            <div class="flex items-center gap-2">
+                <h1 class="text-blue-900 dark:text-white">
+                    {{$page->title}}                                  
+                </h1>     
                 @can('admin')                
-                    <a href="{{route('book.editpage',['id'=>$page->id])}}" class="text-xs">Edit</a>     
+                    <a href="{{route('book.editpage',['id'=>$page->id])}}" class="text-sm">Edit</a>     
                     <form method="POST" action={{route("book.destroypage",['page'=>$page])}}>
                         @method('DELETE')
                         @csrf                                                          
-                        <x-base.button mode="link" class="text-xs" type="submit" >Delete</x-base.button>
+                        <x-base.button mode="link" class="text-sm" type="submit" >Delete</x-base.button>
                     </form>
                 @endcan
             </div>  
             {!! $content !!}
         </article>
-
         <!-- right sidebar -->
         <aside class="w-64 hidden lg:block overflow-y-auto py-4 px-3 dark:bg-gray-900 rounded" aria-label="RightSidebar">
             <span class="text-md text-blue-900 dark:text-blue-200 font-bold">Quick Links</span>

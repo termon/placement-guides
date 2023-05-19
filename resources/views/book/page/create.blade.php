@@ -19,16 +19,12 @@
                     <x-form.input name="title" value="{{old('title',$page->title)}}"/>
                 </x-form.group>
 
-                <x-form.group label="Slug" name="slug" class="mb-4 flex-1">
-                    <x-form.input name="slug" value="{{old('slug',$page->slug)}}"/>
-                </x-form.group>
-
                 <x-form.group label="Sequence" name="sequence" class="mb-4 flex-1">
                     <x-form.input name="sequence" value="{{old('sequence',$page->sequence)}}"/>
                 </x-form.group>
 
                 <x-form.group label="Markdown" name="markdown" class="mb-4 flex-1">
-                    <x-form.textarea rows="35" name="markdown" >
+                    <x-form.textarea rows="30" name="markdown" >
                         {{old('markdown',$page->markdown)}}
                     </x-form.textarea>
                 </x-form.group>

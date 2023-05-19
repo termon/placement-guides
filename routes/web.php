@@ -17,32 +17,32 @@ use App\Http\Controllers\PageController;
 */
 
 Route::get('/', function () {
-    return redirect()->route('book.index');
+    return view('home');
 })->name('home');
 
-// Route::get('/dashboard', function () {
-//     return view('dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', function () {
+    return redirect()->route('book.index');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 
 Route::controller(BookController::class)
     ->group(function () {
         Route::get('/book', 'index')->name('book.index');
 
-        Route::get('/book/{id}/page/{page_id?}', 'show')->name('book.show');
-
         Route::get('/book/create', 'create')->middleware(['auth','can:admin'])->name('book.create');
         Route::post('/book/store', 'store')->middleware(['auth','can:admin'])->name('book.store');
         Route::get('/book/{id}/edit', 'edit')->middleware(['auth','can:admin'])->name('book.edit');
         Route::post('/book/{id}/update', 'update')->middleware(['auth','can:admin'])->name('book.update');       
         Route::delete('/book/{id}/destroy', 'destroy')->middleware(['auth','can:admin'])->name('book.destroy');       
- 
+
         Route::get('/book/{id}/createpage', 'createPage')->middleware(['auth','can:admin'])->name('book.createpage');
-        Route::post('/book/{id}/storepage', 'storePage')->middleware(['auth','can:admin'])->name('book.storepage');
+        Route::post('/book/{id}/storepage', 'storePage')->middleware(['auth','can:admin'])->name('book.storepage');       
         Route::get('/book/editpage/{id}', 'editPage')->middleware(['auth','can:admin'])->name('book.editpage');
         Route::post('/book/updatepage/{page}', 'updatePage')->middleware(['auth','can:admin'])->name('book.updatepage');
         Route::delete('/book/destroypage/{page}', 'destroyPage')->middleware(['auth','can:admin'])->name('book.destroypage');       
- 
+
+        Route::get('/book/{id}/{page_id?}', 'show')->name('book.show');
+
 });
 
 // Route::controller(PageController::class)

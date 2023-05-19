@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use Auth;
 use App\Models\Book;
 use App\Models\Page;
 use App\Exceptions\Handler;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class BookController extends Controller
 {
@@ -28,18 +30,33 @@ class BookController extends Controller
      * @param  integer  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id, $page_id=null)
+    public function show(Request $request, $id, $page_id=null)
     {
-        $book = Book::with('pages')->findOrFail($id);
-        $pages = $book->pages;
-        $page = $pages->first();
+        $book = null;
+        $page = null;
 
-        $page = $page_id ? $pages->where('id','=',$page_id)->first() : $pages->first();
+        if ($page_id != null) {
+            // load page and related book
+            $page = Page::with('book')->where('id','=',$page_id)->orWhere('slug','=',$page_id)->first();
+            $book = $page?->book;    
+        } else {
+            // load book and first page
+            $book = Book::with('pages')->where('id','=',$id)->orWhere('slug','=',$id)->first(); //->findOrFail($id);           
+            $page = $book?->pages?->first();    
+        }
+        
+        if($book == null ) {
+            return redirect()->route('book.index')->with('info', "Book does not exist.");     
+        }
+ 
+        // render page markdown or empty placeholer if page not available
         if ($page) {
             $content = Str::of($page->markdown)->markdown();
             return view('book.show',['book' => $book, 'page' => $page, 'content' => $content]);
+        } else {
+            return view('book.empty',['book' => $book]);
         }
-        return redirect()->route('book.index')->with('info', "Book has no pages.");
+       
     }
 
     /**
@@ -55,14 +72,45 @@ class BookController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([                       
-            'title' => 'required',
-            'slug' => ['required','unique:books,slug'],
+        $validated = $request->validate([                                   
+            'title' => ['required','unique:books,title'],
         ]);
 
         Book::create($validated);
         return redirect()->route('book.index')
                          ->with('info', 'Book Created Successfully');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id)
+    {
+        $book = Book::with('pages')->where('id','=',$id)->orWhere('slug','=',$id)->first();
+        if ($book == null) {
+            return redirect()->route('book.index')
+                         ->with('info', 'Book Could not be found');
+        }
+
+        return view('book.edit', ['book'=>$book]);        
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Book $book)
+    {
+        $id = $request['id'];
+        $validated = $request->validate([ 
+            'id' => 'required',                                  
+            'title' => ['required', Rule::unique('books')->ignore($id)]
+        ]);
+        $updatedbook = Book::findOrFail($id);
+        $updatedbook->title = $validated['title'];              
+        $updatedbook->save();
+       
+        return redirect()->route('book.show',['id' => $updatedbook->slug])
+                         ->with('info', 'Book Updated Successfully');
     }
 
     /**
@@ -89,10 +137,14 @@ class BookController extends Controller
      */
     public function createPage($id)
     { 
-        $book = Book::findOrFail($id);
+        $book = Book::where('id','=',$id)->orWhere('slug','=',$id)->first();
+        if ($book == null) {
+            return redirect()->route('book.index')
+                         ->with('info', 'Book Could not be found');
+        }
         $page = new Page;
-        $page->book_id = $id;
-        return view('page.create', ['page' => $page]);
+        $page->book_id = $book->id;
+        return view('book.page.create', ['page' => $page]);
     }
 
     /**
@@ -102,15 +154,14 @@ class BookController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function storePage(Request $request)
-    {
+    {        
         $validated = $request->validate([            
             'book_id' => 'exists:books,id',
-            'title' => 'required',
+            'title' => ['required', Rule::unique('pages')->where(fn ($query) => $query->where('book_id', $request['book_id']))],
             'markdown' => 'required',
-            'slug' => ['required','unique:pages,slug'],
+            //'slug' => ['required','unique:pages,slug'],
             'sequence' => 'required|integer'        
-        ]);
-        
+        ]);      
         $page = Page::create($validated);
         
         return redirect()->route('book.show',['id' => $page->book_id, 'page_id'=>$page->id])
@@ -128,7 +179,7 @@ class BookController extends Controller
     public function editPage($id)
     {
         $page = Page::where('id', '=', $id)->firstOrFail();
-        return view('page.edit',['page' => $page]);
+        return view('book.page.edit',['page' => $page]);
     }
     
 
