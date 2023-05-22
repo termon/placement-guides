@@ -24,36 +24,6 @@ Route::get('/dashboard', function () {
     return redirect()->route('book.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-
-Route::controller(BookController::class)
-    ->group(function () {
-        Route::get('/book', 'index')->name('book.index');
-
-        Route::get('/book/create', 'create')->middleware(['auth','can:admin'])->name('book.create');
-        Route::post('/book/store', 'store')->middleware(['auth','can:admin'])->name('book.store');
-        Route::get('/book/{id}/edit', 'edit')->middleware(['auth','can:admin'])->name('book.edit');
-        Route::post('/book/{id}/update', 'update')->middleware(['auth','can:admin'])->name('book.update');       
-        Route::delete('/book/{id}/destroy', 'destroy')->middleware(['auth','can:admin'])->name('book.destroy');       
-
-        Route::get('/book/{id}/createpage', 'createPage')->middleware(['auth','can:admin'])->name('book.createpage');
-        Route::post('/book/{id}/storepage', 'storePage')->middleware(['auth','can:admin'])->name('book.storepage');       
-        Route::get('/book/editpage/{id}', 'editPage')->middleware(['auth','can:admin'])->name('book.editpage');
-        Route::post('/book/updatepage/{page}', 'updatePage')->middleware(['auth','can:admin'])->name('book.updatepage');
-        Route::delete('/book/destroypage/{page}', 'destroyPage')->middleware(['auth','can:admin'])->name('book.destroypage');       
-
-        Route::get('/book/{id}/{page_id?}', 'show')->name('book.show');
-
-});
-
-// Route::controller(PageController::class)
-//     ->group(function () {
-//         Route::get('/page/create',    'create')->middleware(['auth','can:admin'])->name('page.create');
-//         Route::post('/page/store',    'store')->middleware(['auth','can:admin'])->name('page.store');
-//         Route::get('/page/{id}/edit', 'edit')->middleware(['auth','can:admin'])->name('page.edit');
-//         Route::post('/page/{id}',     'update')->middleware(['auth','can:admin'])->name('page.update');       
-//         Route::delete('/page/{page}',   'destroy')->middleware(['auth','can:admin'])->name('page.destroy');
-// });
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -61,3 +31,26 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::controller(BookController::class)
+    ->group(function () {
+        Route::get('/book', 'index')->name('book.index');
+      
+        Route::get('/create', 'create')->middleware(['auth','can:admin'])->name('book.create');
+        Route::post('/store', 'store')->middleware(['auth','can:admin'])->name('book.store');
+        Route::get('/{id}/edit', 'edit')->middleware(['auth','can:admin'])->name('book.edit');
+        Route::post('/{id}/update', 'update')->middleware(['auth','can:admin'])->name('book.update');       
+        Route::delete('/{id}/destroy', 'destroy')->middleware(['auth','can:admin'])->name('book.destroy');       
+
+        Route::get('/{id}/createpage', 'createPage')->middleware(['auth','can:admin'])->name('book.createpage');
+        Route::post('/{id}/storepage', 'storePage')->middleware(['auth','can:admin'])->name('book.storepage');       
+        Route::get('/editpage/{id}', 'editPage')->middleware(['auth','can:admin'])->name('book.editpage');
+        Route::post('/updatepage/{page}', 'updatePage')->middleware(['auth','can:admin'])->name('book.updatepage');
+        Route::delete('/destroypage/{page}', 'destroyPage')->middleware(['auth','can:admin'])->name('book.destroypage');       
+
+        Route::get('/restore', 'restore')->middleware(['auth','can:admin'])->name('book.restore');
+        Route::post('/restorepage/{id}', 'restorePage')->middleware(['auth','can:admin'])->name('book.restorepage');
+     
+        Route::get('{id}/{page_id?}', 'show')->name('book.show');
+
+});

@@ -21,8 +21,8 @@
                     </x-form.group>                    
 
                     <div class="my-2">
-                    <x-base.button type="submit">Update</x-button>
-                    <x-base.link href="{{route('book.show',['id' => $book->slug ])}}">Cancel</x-link>
+                    <x-base.button type="submit">Update</x-base.button>
+                    <x-base.link href="{{route('book.show',['id' => $book->slug ])}}">Cancel</x-base.link>
                     </div>
                 </div>
             </form>

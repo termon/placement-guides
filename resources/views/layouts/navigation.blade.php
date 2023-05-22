@@ -18,9 +18,17 @@
                 </div>
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                     <x-nav-link :href="route('book.index')" :active="request()->routeIs('book.index')">
-                        {{ __('Guides') }}
+                        {{ __('Handbooks') }}
                     </x-nav-link>
                 </div>
+
+                @auth
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <x-nav-link :href="route('book.restore')" :active="request()->routeIs('book.restore')">
+                        {{ __('Restore') }}
+                    </x-nav-link>
+                </div>
+                @endauth
             </div>
 
             <!-- Settings Dropdown -->

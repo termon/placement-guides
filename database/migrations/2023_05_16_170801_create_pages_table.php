@@ -21,6 +21,7 @@ return new class extends Migration
             $table->text('markdown');
             $table->integer('sequence');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

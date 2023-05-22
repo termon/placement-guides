@@ -126,7 +126,6 @@ class BookController extends Controller
                          ->with('info', 'Book Deleted Successfully');
     }
 
-
     // ============================ Pages =====================================
    
     /**
@@ -223,5 +222,35 @@ class BookController extends Controller
         return redirect()->route('book.show',['id'=>$book_id])->with('info', 'Page Deleted Successfully');
 
     }
+
+     /**
+     * Restore Deleted Pages from storage.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function restore()
+    {
+        $pages = Page::with('book')->onlyTrashed()->get();
+      
+        return view('book.page.restore',['pages' =>$pages]);
+    }
+
+     /**
+     * Restore soft deleted page from storage.
+     *
+     * @param  \App\Models\Page  $page
+     * @return \Illuminate\Http\Response
+     */
+    public function restorePage(Request $request) {
+       
+        Page::withTrashed()
+                ->where('id', $request->id)
+                ->restore();
+    
+        return redirect()->route('book.restore',[])
+                         ->with('info', 'Page Restored Successfully');
+
+    }
+
 
 }
