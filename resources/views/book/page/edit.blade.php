@@ -11,7 +11,7 @@
         <div class="rounded-xl px-5 py-1 shadow-lg bg-gray-50 mb-4">
 
             <!-- update classification -->
-            <form  method="POST" action={{route("book.updatepage",['page'=>$page])}}>
+            <form  method="POST" action={{route("book.updatepage",['page'=>$page->id])}}>
                 @csrf
                 <div class="flex-1">
                     <input type="hidden" name="id" value="{{$page->id}}"></input>   
@@ -33,8 +33,8 @@
                     </x-form.group>
 
                     <div class="my-2">
-                    <x-base.button class="" btype="submit">Update</x-button>
-                    <x-base.link href="{{route('book.show',['id' => $page->book_id, 'page_id'=>$page->id])}}">Cancel</x-link>
+                    <x-base.button  btype="submit">Update</x-button>
+                    <x-base.link href="{{route('book.showpage',['book' => $page->book->id, 'page'=>$page->id])}}">Cancel</x-link>
                     </div>
                 </div>
             </form>

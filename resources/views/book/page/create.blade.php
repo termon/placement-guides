@@ -10,7 +10,7 @@
     <div class="rounded-xl px-5 py-1 shadow-lg bg-gray-50 mb-4">
 
         <!-- update page -->
-        <form  method="POST" action={{route("book.storepage", ['id'=>$page->book_id])}}>
+        <form  method="POST" action={{route("book.storepage", ['book'=>$page->book_id])}}>
             @csrf
             <div class="flex-1">
                 <input type="hidden" name="book_id" value="{{$page->book_id}}"></input>
@@ -31,7 +31,7 @@
 
                 <div class="my-2">
                 <x-base.button class="" type="submit">Create</x-button>
-                <x-base.link href="{{route('book.show',['id' => $page->book_id ])}}">Cancel</x-link>
+                <x-base.link href="{{route('book.show',['book' => $page->book_id ])}}">Cancel</x-link>
                 </div>
             </div>
         </form>

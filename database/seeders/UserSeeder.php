@@ -35,14 +35,6 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'remember_token' => Str::random(10),
         ]);
-        User::create([
-            'name' => 'guest', //fake()->name(),
-            'email' => 'guest@mail.com', //fake()->safeEmail(),
-            'role' => ROLE::GUEST,
-            'email_verified_at' => now(),
-            'password' => Hash::make('password'),
-            'remember_token' => Str::random(10),
-        ]);
 
     }
 }

@@ -9,8 +9,9 @@ $yellow    = "text-white    bg-yellow-400 font-medium rounded-lg text-sm px-5 py
 $purple    = "text-white    bg-purple-700 font-medium rounded-lg text-sm px-5 py-2.5 hover:font-bold hover:bg-purple-800              focus:outline-none focus:ring-2 focus:ring-purple-300 dark:text-white    dark:bg-purple-600  dark:hover:bg-purple-700 dark:focus:ring-purple-900";
 $light     = "text-gray-900 bg-gray-200   font-medium rounded-lg text-sm px-5 py-2.5 hover:font-bold hover:bg-gray-100                focus:outline-none focus:ring-2 focus:ring-gray-300   dark:text-gray-900 dark:bg-gray-300    dark:hover:bg-gray-400   dark:focus:ring-gray-700  dark:border-gray-700";
 $link      = "text-gray-900               font-medium rounded-lg text-sm px-5 py-2.5 hover:font-bold hover:text-black hover:underline focus:outline-none focus:ring-2 focus:ring-gray-300   dark:text-white";
+$none      = "text-gray-900               font-medium            text-sm             hover:font-bold hover:text-black hover:underline focus:outline-none                                    dark:text-white";
 
-$classes = 'inline-flex whitespace-nowrap cursor-pointer items-center disabled:opacity-25 transition ease-in-out duration-150';
+$classes = 'no-underline hover:underline inline-flex whitespace-nowrap cursor-pointer items-center disabled:opacity-25 transition ease-in-out duration-150';
 if ($mode === 'primary')        $classes = $classes . ' ' . $primary;
 else if ($mode === 'secondary') $classes = $classes . ' ' . $secondary;
 else if ($mode === 'dark')      $classes = $classes . ' ' . $dark;
@@ -20,6 +21,7 @@ else if ($mode === 'red')       $classes = $classes . ' ' . $red;
 else if ($mode === 'yellow')    $classes = $classes . ' ' . $yellow;
 else if ($mode === 'purple')    $classes = $classes . ' ' . $purple;
 else if ($mode === 'link')      $classes = $classes . ' ' . $link;
+else $classes =  $classes . ' ' . $none;
 @endphp
 
 <a {{ $attributes->merge(['class' => $classes ]) }}>

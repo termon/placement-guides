@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Page;
 use App\Models\Book;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
@@ -16,13 +17,19 @@ class BookSeeder extends Seeder
      */
     public function run()
     {
+        $s1 = User::where('email', 'staff@mail.com')->get()->first();
+
         $b = Book::create([
             'title' => 'SCEIS Placement Handbook',
-            'slug' => 'sceis-handbook'
+            'slug' => 'sceis-handbook',
+            'description' => 'Placement Handbook for School of Computing Engineering & Intelligent Systems',
+            'user_id' => $s1->id
         ]);
         $r = Book::create([
             'title' => 'Recruit Handbook',
-            'slug' => 'recruit-handbook'
+            'slug' => 'recruit-handbook',
+            'description' => 'Handbook Covering Use of Recruit for Students in School of Computing Engineering & Intelligent Systems',
+            'user_id' => $s1->id
         ]);
 
         // add pages to Placement Handbook

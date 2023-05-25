@@ -12,9 +12,9 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-nav-link :href="route('home')" :active="request()->routeIs('home')">
+                    <!-- <x-nav-link :href="route('home')" :active="request()->routeIs('home')">
                         {{ __('Home') }}
-                    </x-nav-link>
+                    </x-nav-link> -->
                 </div>
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                     <x-nav-link :href="route('book.index')" :active="request()->routeIs('book.index')">
@@ -22,13 +22,11 @@
                     </x-nav-link>
                 </div>
 
-                @auth
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-nav-link :href="route('book.restore')" :active="request()->routeIs('book.restore')">
-                        {{ __('Restore') }}
+                    <x-nav-link :href="route('book.restorable')" :active="request()->routeIs('book.restore')">
+                        {{ __('Trash') }}
                     </x-nav-link>
                 </div>
-                @endauth
             </div>
 
             <!-- Settings Dropdown -->

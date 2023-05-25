@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\PageController;
-
+use App\Http\Controllers\PreviewController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -16,7 +16,7 @@ use App\Http\Controllers\PageController;
 |
 */
 
-Route::get('/', function () {
+Route::get('/home', function () {
     return view('home');
 })->name('home');
 
@@ -33,24 +33,42 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 Route::controller(BookController::class)
+    ->prefix('book') 
+    ->middleware(['auth', 'verified'])   
     ->group(function () {
-        Route::get('/book', 'index')->name('book.index');
+        Route::get('/', 'index')->name('book.index');
       
-        Route::get('/create', 'create')->middleware(['auth','can:admin'])->name('book.create');
-        Route::post('/store', 'store')->middleware(['auth','can:admin'])->name('book.store');
-        Route::get('/{id}/edit', 'edit')->middleware(['auth','can:admin'])->name('book.edit');
-        Route::post('/{id}/update', 'update')->middleware(['auth','can:admin'])->name('book.update');       
-        Route::delete('/{id}/destroy', 'destroy')->middleware(['auth','can:admin'])->name('book.destroy');       
+        Route::get('/create', 'create')->name('book.create');
+        Route::post('/store', 'store')->name('book.store');
+        Route::post('/{book}/clone', 'clone')->name('book.clone');    
 
-        Route::get('/{id}/createpage', 'createPage')->middleware(['auth','can:admin'])->name('book.createpage');
-        Route::post('/{id}/storepage', 'storePage')->middleware(['auth','can:admin'])->name('book.storepage');       
-        Route::get('/editpage/{id}', 'editPage')->middleware(['auth','can:admin'])->name('book.editpage');
-        Route::post('/updatepage/{page}', 'updatePage')->middleware(['auth','can:admin'])->name('book.updatepage');
-        Route::delete('/destroypage/{page}', 'destroyPage')->middleware(['auth','can:admin'])->name('book.destroypage');       
+        Route::get('/{book}/edit', 'edit')->name('book.edit');
+        Route::post('/{book}/update', 'update')->name('book.update');       
 
-        Route::get('/restore', 'restore')->middleware(['auth','can:admin'])->name('book.restore');
-        Route::post('/restorepage/{id}', 'restorePage')->middleware(['auth','can:admin'])->name('book.restorepage');
-     
-        Route::get('{id}/{page_id?}', 'show')->name('book.show');
+        Route::get('/restorable', 'restorable')->name('book.restorable');
+        
+        Route::delete('/{book}/delete', 'delete')->name('book.delete');                     
+        Route::post('/{book}/restore', 'restore')->name('book.restore')->withTrashed();
+        Route::post('/{book}/destroy', 'destroy')->name('book.destroy')->withTrashed();              
 
+        Route::get('/{book}/createpage', 'createPage')->name('book.createpage');
+        Route::post('/{book}/storepage', 'storePage')->name('book.storepage');       
+           
+        Route::get('/{page}/editpage', 'editPage')->name('book.editpage');
+        Route::post('/{page}/updatepage', 'updatePage')->name('book.updatepage');
+        
+        Route::delete('/{page}/deletepage', 'deletePage')->name('book.deletepage');
+        Route::post('/{page}/restorepage', 'restorePage')->name('book.restorepage')->withTrashed();
+        Route::post('/{page}/destroypage', 'destroyPage')->name('book.destroypage')->withTrashed();              
+
+        Route::get('/{book}', 'show')->name('book.show');
+        Route::get('/{book}/page/{page}', 'showPage')->name('book.showpage')->scopeBindings();
+        //Route::get('/{book}/{page?}', 'show')->name('book.show')->scopeBindings();
+
+});
+
+Route::controller(PreviewController::class)->group(function () {
+    Route::get('/', [PreviewController::class, 'index'])->name('preview.index');
+    Route::get('/{book:slug}', [PreviewController::class, 'show'])->name('preview.show');
+    Route::get('/{book:slug}/page/{page:slug}', [PreviewController::class, 'showPage'])->scopeBindings()->name('preview.showpage');
 });

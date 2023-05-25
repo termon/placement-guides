@@ -20,6 +20,22 @@ class Page extends Model
         return $this->belongsTo(Book::class);
     }
 
+    /**
+     * Called when Book needs loaded in route model binding
+     * Used to allow customisation of book search and eager loading of pages
+     * Also ensures soft deleted pages can be located
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        error_log('Page Route Model Binding: ' . $field . " = " . $value);
+        $field = $field ? $field : 'id';
+        // Page::withTrashed()->with('book')->where($field,$value)->first();
+        return Page::with('book')->where($field,$value)->first();       
+    }
+
+    /**
+     * Update slug from title field when created or updated
+     */
     public static function boot()
     {
         parent::boot();
@@ -28,11 +44,9 @@ class Page extends Model
             $model->slug = Str::of($model->title)->slug('-');
         });
 
-
         self::updating(function($model){
             $model->slug = Str::of($model->title)->slug('-');
-        });
-        
+        }); 
     }
 
 }

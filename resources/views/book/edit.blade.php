@@ -18,11 +18,17 @@
                 
                     <x-form.group label="Title" name="title" class="mb-4 flex-1">
                         <x-form.input name="title" value="{{old('title',$book->title)}}"/>
-                    </x-form.group>                    
+                    </x-form.group>   
+                    
+                    <x-form.group label="Description" name="description" class="mb-4 flex-1">
+                        <x-form.textarea rows="3" name="description" >
+                            {{old('description',$book->description)}}
+                        </x-form.textarea>
+                    </x-form.group>
 
                     <div class="my-2">
                     <x-base.button type="submit">Update</x-base.button>
-                    <x-base.link href="{{route('book.show',['id' => $book->slug ])}}">Cancel</x-base.link>
+                    <x-base.link href="{{route('book.index')}}">Cancel</x-base.link>
                     </div>
                 </div>
             </form>

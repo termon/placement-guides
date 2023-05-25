@@ -9,7 +9,7 @@
                     {{$book->title}}
                 </h1>
             </div>  
-            @can('admin')
+            @can('update',$book)
                 <a href="{{route('book.createpage', $book->slug)}}" class="flex content-center">     
                     <x-svg.plus class="text-green-900"/>        
                     <span class="font-bold">Add Page</span>

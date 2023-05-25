@@ -19,38 +19,35 @@ class BookController extends Controller
      */
     public function index()
     {
-        $books = Book::all();
+        $this->authorize('viewAny', Book::class);
 
+        // display books owned by authenticated author OR all if administrator
+        $books = Book::authored()->get();
         return view('book.index',['books' => $books]);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  integer  $id
+     * @param  integer  $id - book id or slug
+     * @param  integer  $page_id - page id or slug 
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request, $id, $page_id=null)
+    public function show(Book $book)
     {
-        $book = null;
-        $page = null;
+        $this->authorize('view', $book);
 
-        if ($page_id != null) {
-            // load page and related book
-            $page = Page::with('book')->where('id','=',$page_id)->orWhere('slug','=',$page_id)->first();
-            $book = $page?->book;    
-        } else {
-            // load book and first page
-            $book = Book::with('pages')->where('id','=',$id)->orWhere('slug','=',$id)->first(); //->findOrFail($id);           
-            $page = $book?->pages?->first();    
-        }
-        
-        if($book == null ) {
+        if($book == null) 
+        {
             return redirect()->route('book.index')->with('info', "Book does not exist.");     
         }
- 
+
+        // try to load first page
+        $page = $book->pages?->first();    
+             
         // render page markdown or empty placeholer if page not available
-        if ($page) {
+        if ($page)
+        {
             $content = Str::of($page->markdown)->markdown();
             return view('book.show',['book' => $book, 'page' => $page, 'content' => $content]);
         } else {
@@ -58,25 +55,30 @@ class BookController extends Controller
         }
        
     }
-
+  
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
-        return view('book.create', ['book' => new Book]);
+        $book = new Book;
+        $book->user_id = $request->user()->id;
+        return view('book.create', ['book' => $book]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, Book $book)
     {
+        $this->authorize('create', Book::class);
+
         $validated = $request->validate([                                   
             'title' => ['required','unique:books,title'],
+            'description' => ['required','max:500'],
+            'user_id' => ['required']
         ]);
-
-        Book::create($validated);
+        Book::create($validated);    
         return redirect()->route('book.index')
                          ->with('info', 'Book Created Successfully');
     }
@@ -84,9 +86,10 @@ class BookController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id)
+    public function edit(Book $book)
     {
-        $book = Book::with('pages')->where('id','=',$id)->orWhere('slug','=',$id)->first();
+        $this->authorize('update', $book);
+
         if ($book == null) {
             return redirect()->route('book.index')
                          ->with('info', 'Book Could not be found');
@@ -100,43 +103,174 @@ class BookController extends Controller
      */
     public function update(Request $request, Book $book)
     {
+        $this->authorize('update', $book);
+
         $id = $request['id'];
         $validated = $request->validate([ 
             'id' => 'required',                                  
-            'title' => ['required', Rule::unique('books')->ignore($id)]
+            'title' => ['required', Rule::unique('books')->ignore($id)],
+            'description' => ['required','max:500'],
         ]);
         $updatedbook = Book::findOrFail($id);
-        $updatedbook->title = $validated['title'];              
+
+        $updatedbook->title = $validated['title'];    
+        $updatedbook->description = $validated['description'];              
         $updatedbook->save();
        
-        return redirect()->route('book.show',['id' => $updatedbook->slug])
+        return redirect()->route('book.index')
                          ->with('info', 'Book Updated Successfully');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Clone the specified resource in storage.
+     */
+    public function clone(Request $request, Book $book)
+    {
+        $this->authorize('create', $book);
+       
+        $success = \DB::transaction(function() use ($request, $book)
+        {
+            try {
+                // clone book
+                $cloned = $book->replicate();
+                $cloned->title = $book->title . " (cloned)";
+                $cloned->user_id = $request->user()->id; 
+                $cloned->save();
+                // clone pages
+                foreach($book->pages as $page)
+                {     
+                    $p = new Page;
+                    $p->book_id = $cloned->id;
+                    $p->title = $page->title;
+                    $p->markdown = $page->markdown;
+                    $p->sequence = $page->sequence;
+                    $cloned->pages()->create($p->toArray());                  
+                }   
+                $cloned->push();
+                //throw new \Exception("TEST");
+            } catch(\Exception $e)
+            {
+                \DB::rollback();
+                return false;
+            } 
+            return true;           
+        });
+
+        if ($success) {
+            return redirect()->route('book.index')->with('info', 'Book Cloned Successfully');
+        } else {
+            return redirect()->route('book.index')->with('info', 'Book Could not be Cloned');
+        }
+    }
+
+    /**
+     * Show Restorable Books and Pages from storage.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function restorable()
+    {
+        $books = Book::with('pages')->onlyTrashed()->get();
+        $pages = Page::with('book')->onlyTrashed()->get();
+        
+        return view('book.restore',['books' => $books, 'pages' =>$pages]);
+    }
+
+    /**
+     * Soft Delete book from storage.
+     *
+     * @param  \App\Models\Book $book
+     * @return \Illuminate\Http\Response
+     */
+    public function delete(Book $book)
+    {
+        $this->authorize('delete', $book);
+   
+        $book->delete();
+    
+        return redirect()->route('book.index')
+                         ->with('info', 'Book Deleted Successfully');
+
+    }
+
+    /**
+     * Permanently Delete specified resource from storage.
      *
      * @param  \App\Models\Book  $handbook
      * @return \Illuminate\Http\Response
      */
     public function destroy(Book $book)
     {
-        Book::delete($book);
-        return redirect()->route('book.index',[])
-                         ->with('info', 'Book Deleted Successfully');
+        $this->authorize('forceDelete', $book);
+       
+        $book->forceDelete($book);
+        return redirect()->route('book.restorable')
+                         ->with('info', 'Book Destroyed Successfully');
     }
 
-    // ============================ Pages =====================================
+
+    /**
+     * Restore soft deleted book from storage.
+     *
+     * @param  \App\Models\Book  $book
+     * @return \Illuminate\Http\Response
+     */
+    public function restore(Book $book)
+    {
+        $this->authorize('restore',$book);
+        $book->restore();
+    
+        return redirect()->route('book.restorable')
+                         ->with('info', 'Book Restored Successfully');
+
+    }
+
+
+    // ============================== PAGES ====================================
    
+     /**
+     * Show specified page in a book
+     *
+     * @param Book $book
+     * @param Page $page
+     * @return \Illuminate\Http\Response
+     */
+    public function showPage(Book $book, Page $page)
+    {
+        $this->authorize('view', $book);
+
+        if($book == null) 
+        {
+            return redirect()->route('book.index')->with('info', "Book does not exist.");     
+        }
+
+        if (!$page) 
+        {            
+            // try to load first page
+            $page = $book->pages?->first();    
+        }
+       
+        // render page markdown or empty placeholer if page not available
+        if ($page)
+        {
+            $content = Str::of($page->markdown)->markdown();
+            return view('book.show',['book' => $book, 'page' => $page, 'content' => $content]);
+        } else {
+            return view('book.empty',['book' => $book]);
+        }
+       
+    }
+
     /**
      * Show the form for creating a new page in specified book resource.
      *
      * @param integer  $id
      * @return \Illuminate\Http\Response
      */
-    public function createPage($id)
-    { 
-        $book = Book::where('id','=',$id)->orWhere('slug','=',$id)->first();
+    public function createPage(Book $book)
+    {        
+        $this->authorize('update', $book);
+
         if ($book == null) {
             return redirect()->route('book.index')
                          ->with('info', 'Book Could not be found');
@@ -154,6 +288,8 @@ class BookController extends Controller
      */
     public function storePage(Request $request)
     {        
+        $this->authorize('create', Book::class);
+
         $validated = $request->validate([            
             'book_id' => 'exists:books,id',
             'title' => ['required', Rule::unique('pages')->where(fn ($query) => $query->where('book_id', $request['book_id']))],
@@ -163,7 +299,7 @@ class BookController extends Controller
         ]);      
         $page = Page::create($validated);
         
-        return redirect()->route('book.show',['id' => $page->book_id, 'page_id'=>$page->id])
+        return redirect()->route('book.show',['book' => $page->book->id, 'page'=>$page->id])
                          ->with('info', 'Page Added Successfully');
     }
 
@@ -175,9 +311,10 @@ class BookController extends Controller
      * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
-    public function editPage($id)
-    {
-        $page = Page::where('id', '=', $id)->firstOrFail();
+    public function editPage(Page $page)
+    {       
+        $this->authorize('update', $page->book);
+
         return view('book.page.edit',['page' => $page]);
     }
     
@@ -191,6 +328,8 @@ class BookController extends Controller
      */
     public function updatePage(Request $request, Page $page)
     {
+        $this->authorize('update', $page?->book);
+
         $validated = $request->validate([
             'book_id' => 'exists:books,id',
             'title' => 'required',
@@ -206,7 +345,8 @@ class BookController extends Controller
         $page->markdown = $validated['markdown'];
         $page->sequence = $validated['sequence'];
         $page->save();
-        return redirect()->route('book.show',['id' => $validated['book_id'], 'page_id'=>$page->id]);
+
+        return redirect()->route('book.showpage',['book' => $page->book->id, 'page'=>$page->id]);
     }
 
     /**
@@ -215,42 +355,48 @@ class BookController extends Controller
      * @param  \App\Models\Page  $page
      * @return \Illuminate\Http\Response
      */
-    public function destroyPage(Page $page)
+    public function deletePage(Page $page)
     {
-        $book_id = $page->book_id;
+        $this->authorize('delete', $page->book);
+
+        $book_id = $page->book_id;      
+
         $page->delete();
-        return redirect()->route('book.show',['id'=>$book_id])->with('info', 'Page Deleted Successfully');
+        return redirect()->route('book.show',['book'=>$book_id])->with('info', 'Page Deleted Successfully');
 
     }
 
-     /**
-     * Restore Deleted Pages from storage.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function restore()
-    {
-        $pages = Page::with('book')->onlyTrashed()->get();
-      
-        return view('book.page.restore',['pages' =>$pages]);
-    }
-
-     /**
+    /**
      * Restore soft deleted page from storage.
      *
      * @param  \App\Models\Page  $page
      * @return \Illuminate\Http\Response
      */
-    public function restorePage(Request $request) {
-       
-        Page::withTrashed()
-                ->where('id', $request->id)
-                ->restore();
+    public function restorePage(Page $page)
+    {
+        $this->authorize('restore',$page->book);
+        $page->restore();
     
-        return redirect()->route('book.restore',[])
+        return redirect()->route('book.restorable')
                          ->with('info', 'Page Restored Successfully');
 
     }
 
+    /**
+     * Permanently delete soft deleted page from storage.
+     *
+     * @param  \App\Models\Page  $page
+     * @return \Illuminate\Http\Response
+     */
+    public function destroyage(Page $page)
+    {
+        $this->authorize('forceDelete');
+   
+        $page->forceDelete();
+    
+        return redirect()->route('book.restorable')
+                         ->with('info', 'Page Deleted Permanently');
+
+    }
 
 }

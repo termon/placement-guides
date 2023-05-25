@@ -5,8 +5,6 @@ namespace App\Enums;
 enum Role: string {
     case  ADMIN     = "admin";
     case  STAFF     = "staff";
-    case  STUDENT   = "student";
-    case  GUEST     = "guest";
 
     public static function name($val): string {
         $e = Role::tryFrom($val);

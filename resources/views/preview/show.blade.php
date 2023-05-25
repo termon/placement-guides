@@ -1,6 +1,6 @@
 
 
-<x-app-layout>
+<x-preview-layout>
     <x-slot name="header">
         <div class="flex space-x-2 justify-between">
             <div class="flex gap-2 items-center">
@@ -8,13 +8,7 @@
                 <h1 class="text-slate-900 font-bold ml-4 text-2xl md:text-3xl lg:text-4xl dark:text-white dark:bg-gray-900">
                     {{$book->title}}
                 </h1>
-            </div>  
-            @can('update',$book)
-                <a href="{{route('book.createpage', ['book'=>$book->id])}}" class="flex content-center">     
-                    <x-svg.plus class="text-green-900"/>        
-                    <span class="font-bold">Add Page</span>
-                </a> 
-            @endcan
+            </div>             
         </div>
     </x-slot>
 
@@ -26,7 +20,7 @@
                 <ul class="mt-2 space-y-2">
                     @foreach($book->pages as $p)
                         <li class="px-1 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded">                   
-                            <a  href="{{route('book.showpage',['book' => $p->book->id, 'page'=>$p->id])}}" 
+                            <a  href="{{route('preview.showpage',['book' => $p->book->slug, 'page'=>$p->slug])}}" 
                                 class="font-semibold flex flex-nowrap space-x-1" >
                                 <x-svg.book-icons icon="{{$p->slug}}" />    
                                 <span>{{$p->sequence}}.</span>
@@ -42,17 +36,7 @@
             <div class="flex items-center gap-2">
                 <h1 class="text-blue-900 dark:text-white">
                     {{$page->title}}                                  
-                </h1>     
-                @can('update',$book)                
-                    <x-base.link mode="link" href="{{route('book.editpage',['page'=>$page->id])}}" >Edit</x-base.link>     
-                @endcan
-                @can('delete',$book)                    
-                    <form method="POST" action={{route('book.deletepage',['page'=>$page->id])}}>
-                        @method('DELETE')
-                        @csrf                                                          
-                        <x-base.button mode="link" class="text-sm" type="submit" >Delete</x-base.button>
-                    </form>
-                @endcan
+                </h1>                     
             </div>  
             {!! $content !!}
         </article>
@@ -87,6 +71,6 @@
                                   .replace(/^-+|-+$/g, '')
     </script>
 
-</x-app-layout>
+</x-preview-layout>
 
 
