@@ -27,7 +27,7 @@
             @foreach($files as $file)
                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                     <td class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                       {{ Storage::url($file) }}
+                       <a href="{{ Storage::url($file) }}" target="_blank" class="hover:text-blue-500 underline">{{ Storage::url($file) }}</a>
                     </td>
                     <td class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                        <img src={{Storage::url($file)}} class="w-64"/>
