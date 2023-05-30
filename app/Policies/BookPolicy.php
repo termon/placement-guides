@@ -52,7 +52,7 @@ class BookPolicy
     public function update(User $user, Book $book): bool
     {
         //error_log('UPDATE POLICY: ' . $user->role . " Book " . $book?->title); 
-        return $user->id === $book->user_id;
+        return $user->id === $book->user_id || $user->role === Role::ADMIN->value;
     }
 
     /**
@@ -61,7 +61,7 @@ class BookPolicy
     public function delete(User $user, Book $book): bool    
     {
         //error_log('DELETE POLICY: ' . $user->role . " Book " . $book?->title); 
-        return $user->id === $book->user_id;
+        return $user->id === $book->user_id || $user->role === Role::ADMIN->value;
     }
 
     /**
@@ -70,7 +70,7 @@ class BookPolicy
     public function restore(User $user, Book $book): bool
     {
         error_log('RESTORE POLICY: ' . $user->role . " Book " . $book?->title); 
-        return $user->id === $book->user_id;
+        return $user->id === $book->user_id || $user->role === Role::ADMIN->value;
     }
 
     /**
@@ -79,6 +79,6 @@ class BookPolicy
     public function forceDelete(User $user, Book $book): bool
     {
         error_log('FORCEDELETE POLICY: ' . $user->role . " Book " . $book?->title); 
-        return $user->role === Role::ADMIN->value;
+        return $user->id === $book->user_id || $user->role === Role::ADMIN->value;
     }
 }

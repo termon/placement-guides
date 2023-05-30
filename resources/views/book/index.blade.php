@@ -31,11 +31,11 @@
                     </td>
                     <td class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                         <div class="flex gap-1">
-                            <a href="{{route('book.show', $b->id)}}">
+                            <a href="{{route('book.show', $b->id)}}" title="View Handbook">
                                 <x-svg.list />
                             </a>
                             @can('update', $b)
-                                <a href="{{route('book.edit', $b->id)}}">
+                                <a href="{{route('book.edit', $b->id)}}" title="Update Handbook">
                                     <x-svg.edit />                 
                                 </a>
                             @endcan
@@ -43,17 +43,17 @@
                             @can('create', $b)
                             <form method="POST" action={{route("book.clone",['book'=>$b->id])}}>
                                 @csrf                                                          
-                                <x-base.button mode="none" type="submit" >
+                                <x-base.button mode="none" type="submit" title="Clone Handbook"  >
                                     <x-svg.plus />   
                                 </x-base.button>
                             </form>
                             @endcan
 
-                            @can('admin')
+                            @can('delete', $b)
                                 <form method="POST" action={{route("book.delete",['book'=>$b->id])}}>
                                     @method('DELETE')
                                     @csrf                                                          
-                                    <x-base.button mode="none" type="submit" >
+                                    <x-base.button mode="none" type="submit" title="Delete Handbook">
                                         <x-svg.trash />   
                                     </x-base.button>
                                 </form>

@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PreviewController;
+use App\Http\Controllers\FileController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -31,6 +33,17 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::controller(FileController::class)
+    ->prefix('file') 
+    ->middleware(['auth', 'verified'])   
+    ->group(function () {
+        Route::get('/', 'index')->name('file.index');
+      
+        Route::get('/create', 'create')->name('file.create');
+        Route::post('/store', 'store')->name('file.store');
+        Route::delete('/destroy', 'destroy')->name('file.destroy');   
+    });
 
 Route::controller(BookController::class)
     ->prefix('book') 
@@ -63,12 +76,11 @@ Route::controller(BookController::class)
 
         Route::get('/{book}', 'show')->name('book.show');
         Route::get('/{book}/page/{page}', 'showPage')->name('book.showpage')->scopeBindings();
-        //Route::get('/{book}/{page?}', 'show')->name('book.show')->scopeBindings();
+    });
 
-});
-
-Route::controller(PreviewController::class)->group(function () {
-    Route::get('/', [PreviewController::class, 'index'])->name('preview.index');
-    Route::get('/{book:slug}', [PreviewController::class, 'show'])->name('preview.show');
-    Route::get('/{book:slug}/page/{page:slug}', [PreviewController::class, 'showPage'])->scopeBindings()->name('preview.showpage');
-});
+Route::controller(PreviewController::class)
+    ->group(function () {
+        Route::get('/', [PreviewController::class, 'index'])->name('preview.index');
+        Route::get('/{book:slug}', [PreviewController::class, 'show'])->name('preview.show');
+        Route::get('/{book:slug}/page/{page:slug}', [PreviewController::class, 'showPage'])->scopeBindings()->name('preview.showpage');
+    });

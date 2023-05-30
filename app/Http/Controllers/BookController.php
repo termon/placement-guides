@@ -22,7 +22,8 @@ class BookController extends Controller
         $this->authorize('viewAny', Book::class);
 
         // display books owned by authenticated author OR all if administrator
-        $books = Book::authored()->get();
+        //$books = Book::authored()->get();
+        $books = Book::all();
         return view('book.index',['books' => $books]);
     }
 

@@ -26,7 +26,7 @@
                 <ul class="mt-2 space-y-2">
                     @foreach($book->pages as $p)
                         <li class="px-1 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded">                   
-                            <a  href="{{route('book.showpage',['book' => $p->book->id, 'page'=>$p->id])}}" 
+                            <a  href="{{route('book.showpage',['book' => $book->id, 'page'=>$p->id])}}" 
                                 class="font-semibold flex flex-nowrap space-x-1" >
                                 <x-svg.book-icons icon="{{$p->slug}}" />    
                                 <span>{{$p->sequence}}.</span>
@@ -47,7 +47,7 @@
                     <x-base.link mode="link" href="{{route('book.editpage',['page'=>$page->id])}}" >Edit</x-base.link>     
                 @endcan
                 @can('delete',$book)                    
-                    <form method="POST" action={{route('book.deletepage',['page'=>$page->id])}}>
+                    <form method="POST" action={{route('book.destroypage',['page'=>$page->id])}}>
                         @method('DELETE')
                         @csrf                                                          
                         <x-base.button mode="link" class="text-sm" type="submit" >Delete</x-base.button>
