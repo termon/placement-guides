@@ -129,35 +129,9 @@ class BookController extends Controller
     {
         $this->authorize('create', $book);
        
-        $success = \DB::transaction(function() use ($request, $book)
-        {
-            try {
-                // clone book
-                $cloned = $book->replicate();
-                $cloned->title = $book->title . " (cloned)";
-                $cloned->user_id = $request->user()->id; 
-                $cloned->save();
-                // clone pages
-                foreach($book->pages as $page)
-                {     
-                    $p = new Page;
-                    $p->book_id = $cloned->id;
-                    $p->title = $page->title;
-                    $p->markdown = $page->markdown;
-                    $p->sequence = $page->sequence;
-                    $cloned->pages()->create($p->toArray());                  
-                }   
-                $cloned->push();
-                //throw new \Exception("TEST");
-            } catch(\Exception $e)
-            {
-                \DB::rollback();
-                return false;
-            } 
-            return true;           
-        });
-
-        if ($success) {
+        $cloned = $book->cloneForUser($request->user());
+       
+        if ($cloned != null) {
             return redirect()->route('book.index')->with('info', 'Book Cloned Successfully');
         } else {
             return redirect()->route('book.index')->with('info', 'Book Could not be Cloned');

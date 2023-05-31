@@ -61,4 +61,44 @@ class Book extends Model
             $model->slug = Str::of($model->title)->slug('-');
         }); 
     }
+
+    /**
+     * clone book, setting owner to $user and save in database
+     *  
+     * @param User $user - owner of cloned book
+     * @return Book      - return cloned book;
+     */
+    public function cloneForUser(User $user) 
+    {
+        $book = $this;
+      
+        // transaction to return clone of book
+        $clone = \DB::transaction(function() use ($book, $user)
+        {
+            try
+            {      
+                $copy = $this->replicate();
+                $copy->title = $this->title . " (copy)";
+                $copy->user_id = $user->id;          
+                $copy->save();
+                
+                // clone pages
+                foreach($book->pages as $page)
+                {     
+                    $p = $page->replicate();                   
+                    $copy->pages()->create($p->toArray());                  
+                }   
+                $copy->push();
+                //throw new \Exception("TEST");               
+            } catch(\Exception $e) {
+              
+                \DB::rollback();
+                $copy = null;
+                dd($e, $copy);
+            }
+            return $copy;             
+        });
+
+        return $clone; 
+    }
 }
