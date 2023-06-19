@@ -88,13 +88,10 @@ class Book extends Model
                     $p = $page->replicate();                   
                     $copy->pages()->create($p->toArray());                  
                 }   
-                $copy->push();
-                //throw new \Exception("TEST");               
+                $copy->push();  
             } catch(\Exception $e) {
-              
                 \DB::rollback();
                 $copy = null;
-                dd($e, $copy);
             }
             return $copy;             
         });
