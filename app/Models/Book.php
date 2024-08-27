@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Str;
 use App\Enums\Role;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Book extends Model
 {
@@ -38,7 +40,7 @@ class Book extends Model
 
     public function scopeAuthored($query)
     {
-        $user = \Auth::user();
+        $user = Auth::user();
         if ($user?->isAdministrator())
         {
             return $query;
@@ -73,7 +75,7 @@ class Book extends Model
         $book = $this;
       
         // transaction to return clone of book
-        $clone = \DB::transaction(function() use ($book, $user)
+        $clone = DB::transaction(function() use ($book, $user)
         {
             try
             {      
@@ -90,7 +92,7 @@ class Book extends Model
                 }   
                 $copy->push();  
             } catch(\Exception $e) {
-                \DB::rollback();
+                DB::rollback();
                 $copy = null;
             }
             return $copy;             
